@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Price List Almair</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="mode-admin">
+  <div class="container">
+    <header>
+      <h1>🌿🌊 𝐏𝐑𝐈𝐂𝐄 𝐋𝐈𝐒𝐓 — 𝑹𝒆𝒔𝒆𝒍𝒍𝒆𝒓 𝑩𝒚 𝑨𝒍𝒎𝒂𝒊𝒓 🌊🌿</h1>
+      <p class="subtitle">✨ Mode Admin - Bisa ubah harga & status stok</p>
+    </header>
+
+    <button onclick="logout()" style="margin-bottom:20px; background:#dc3545; color:#fff; border:none; padding:10px 15px; border-radius:5px; cursor:pointer;">Logout</button>
+
+    <div id="priceList"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+  <script>
+    function logout() {
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
