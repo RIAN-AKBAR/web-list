@@ -1,7 +1,7 @@
 // script.js
 // Ganti dengan URL dan anon key Supabase Anda
-const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+const SUPABASE_URL = 'https://web-list-8f0e6-default-rtdb.firebaseio.com/';
+const SUPABASE_ANON_KEY = 'BJKeaUOnRffaosqNjZKHZvADED0WS_Efk4OjisT7A0rhwFwJBuVFGk_5nyjei6hesCkpIoV8YBcIjgsAH2j2Z30';
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
