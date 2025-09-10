@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price List - Reseller By Almair</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f8ff;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2e8b57, #3cb371);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .login-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .login-form input {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .login-form button {
+            background-color: #2e8b57;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .login-form button:hover {
+            background-color: #3cb371;
+        }
+        
+        .category {
+            margin-bottom: 30px;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-header {
+            background: linear-gradient(135deg, #2e8b57, #3cb371);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .category-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .product-list {
+            padding: 20px;
+        }
+        
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        
+        .product-name {
+            flex: 2;
+        }
+        
+        .product-price {
+            flex: 1;
+            text-align: right;
+            font-weight: bold;
+            color: #2e8b57;
+        }
+        
+        .product-status {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .status-ada {
+            color: #2e8b57;
+            font-weight: bold;
+        }
+        
+        .status-kosong {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .admin-controls {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            justify-content: flex-end;
+        }
+        
+        .admin-controls input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .admin-controls select {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .admin-controls button {
+            background-color: #2e8b57;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .admin-only {
+            display: none;
+        }
+        
+        .mode-admin .admin-only {
+            display: block;
+        }
+        
+        .mode-admin .user-only {
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .product-item {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .product-price, .product-status, .admin-controls {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌿🌊 𝐏𝐑𝐈𝐂𝐄 𝐋𝐈𝐒𝐓 — 𝑹𝒆𝒔𝒆𝒍𝒍𝒆𝒓 𝑩𝒚 𝑨𝒍𝒎𝒂𝒊𝒓 🌊🌿</h1>
+            <p class="subtitle">✨ Premium Access Murah, Aman, Bergaransi!</p>
+        </header>
+        
+        <section class="login-section">
+            <div class="login-form">
+                <input type="password" id="adminPassword" placeholder="Masukkan password admin">
+                <button onclick="toggleAdminMode()">Masuk sebagai Admin</button>
+            </div>
+        </section>
+        
+        <div id="priceList">
+            <!-- Konten price list akan diisi oleh JavaScript -->
+        </div>
+        
+        <footer>
+            <p>© 2023 Reseller By Almair. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Data produk
+        const products = [
+            // Alight Motion
+            { category: "Alight Motion", name: "1 Tahun Privat", price: 3000, status: "Ada" },
+            
+            // CapCut
+            { category: "CapCut", name: "1 Bulan (garansi 7 hari)", price: 6000, status: "Ada" },
+            { category: "CapCut", name: "1 Bulan Full Garansi", price: 12000, status: "Ada" },
+            
+            // GetContact
+            { category: "GetContact", name: "30 Hari", price: 15000, status: "Ada" },
+            
+            // ChatGPT Plus
+            { category: "ChatGPT Plus", name: "1 bulan Sharing", price: 25000, status: "Ada" },
+            { category: "ChatGPT Plus", name: "1 Bulan Private", price: 81000, status: "Ada" },
+            
+            // Remini
+            { category: "Remini", name: "Android Only (1 Tahun)", price: 20000, status: "Ada" },
+            
+            // Canva Pro
+            { category: "Canva Pro", name: "Harian", price: 1000, status: "Ada" },
+            { category: "Canva Pro", name: "Bulanan Member", price: 4000, status: "Ada" },
+            { category: "Canva Pro", name: "Bulanan Admin", price: 8000, status: "Ada" },
+            { category: "Canva Pro", name: "Bulanan Owner", price: 11000, status: "Ada" },
+            { category: "Canva Pro", name: "Tahunan Member", price: 10000, status: "Ada" },
+            
+            // YouTube Premium
+            { category: "YouTube Premium", name: "1 Bulan Famplan", price: 5500, status: "Ada" },
+            { category: "YouTube Premium", name: "1 Bulan Indplan", price: 10500, status: "Ada" },
+            
+            // Spotify Premium
+            { category: "Spotify Premium", name: "1 Bulan Indplan", price: 15000, status: "Ada" },
+            
+            // Fizzo Novel
+            { category: "Fizzo Novel", name: "1 Bulan Share", price: 5000, status: "Ada" },
+            
+            // Wattpad
+            { category: "Wattpad", name: "1 Bulan Share", price: 10000, status: "Ada" },
+            
+            // Prime Video
+            { category: "Prime Video", name: "1 Bulan Privat", price: 12500, status: "Ada" },
+            
+            // Netflix
+            { category: "Netflix", name: "1 User 1 Bulan", price: 23000, status: "Ada" },
+            { category: "Netflix", name: "2 User 1 Bulan", price: 15000, status: "Ada" },
+            { category: "Netflix", name: "Semi Private (2 device)", price: 30000, status: "Ada" },
+            { category: "Netflix", name: "Anti limit", price: 41000, status: "Ada" },
+            
+            // Vidio Platinum
+            { category: "Vidio Platinum", name: "1 Bulan Share", price: 25000, status: "Ada" },
+            { category: "Vidio Platinum", name: "1 Bulan Private", price: 38000, status: "Ada" },
+            
+            // VIU
+            { category: "VIU", name: "5 Tahun Privat Antilimit", price: 15000, status: "Ada" },
+            
+            // WeTV
+            { category: "WeTV", name: "1 Bulan Share 8u", price: 7500, status: "Ada" },
+            { category: "WeTV", name: "1 Bulan Share 6u", price: 8000, status: "Ada" },
+            { category: "WeTV", name: "1 Bulan Privat", price: 23000, status: "Ada" },
+            
+            // iQIYI
+            { category: "iQIYI", name: "1 Bulan Share Standar", price: 6000, status: "Ada" },
+            { category: "iQIYI", name: "1 Bulan Share Premium", price: 8000, status: "Ada" },
+            { category: "iQIYI", name: "1 Bulan Privat Standar", price: 39000, status: "Ada" },
+            { category: "iQIYI", name: "1 Bulan Privat Premium", price: 47000, status: "Ada" },
+            
+            // Disney+
+            { category: "Disney+", name: "1 Bulan Share", price: 15000, status: "Ada" },
+            
+            // Bstation
+            { category: "Bstation", name: "1 Bulan Share", price: 12000, status: "Ada" },
+            
+            // LOKLOK
+            { category: "LOKLOK", name: "1 Bulan Plan standar", price: 25500, status: "Ada" },
+            
+            // HBO MAX
+            { category: "HBO MAX", name: "1 Bulan Sharing", price: 25000, status: "Ada" },
+            
+            // Ibis Paint X
+            { category: "Ibis Paint X", name: "1 Bulan Only Android", price: 15000, status: "Ada" },
+            
+            // Wink
+            { category: "Wink", name: "7 Hari Privat Only Android", price: 15500, status: "Ada" },
+            
+            // Lightroom
+            { category: "Lightroom", name: "12 Bulan Share", price: 10000, status: "Ada" },
+            
+            // VSCO
+            { category: "VSCO", name: "12 Bulan Only IOS", price: 15000, status: "Ada" },
+            
+            // Polar
+            { category: "Polar", name: "12 Bulan", price: 17000, status: "Ada" },
+            
+            // Zoom
+            { category: "Zoom", name: "14 Hari", price: 9000, status: "Ada" },
+            
+            // youku
+            { category: "youku", name: "1 Bulan Share", price: 10000, status: "Ada" },
+            
+            // picsart
+            { category: "picsart", name: "1 Bulan Share", price: 8000, status: "Ada" },
+            
+            // TikTok Followers
+            { category: "TikTok Followers", name: "100 Followers", price: 10000, status: "Ada" },
+            { category: "TikTok Followers", name: "200 Followers", price: 20000, status: "Ada" },
+            { category: "TikTok Followers", name: "500 Followers", price: 50000, status: "Ada" },
+            { category: "TikTok Followers", name: "1.000 Followers", price: 95000, status: "Ada" },
+            { category: "TikTok Followers", name: "2.000 Followers", price: 195000, status: "Ada" },
+            
+            // TikTok Views
+            { category: "TikTok Views", name: "5.000 Views", price: 1000, status: "Ada" },
+            { category: "TikTok Views", name: "10.000 Views", price: 2000, status: "Ada" },
+            { category: "TikTok Views", name: "20.000 Views", price: 3000, status: "Ada" },
+            { category: "TikTok Views", name: "50.000 Views", price: 6000, status: "Ada" },
+            { category: "TikTok Views", name: "100.000 Views", price: 12000, status: "Ada" },
+            
+            // TikTok Like (Bot Mix)
+            { category: "TikTok Like (Bot Mix)", name: "200 Like", price: 2000, status: "Ada" },
+            { category: "TikTok Like (Bot Mix)", name: "500 Like", price: 5000, status: "Ada" },
+            { category: "TikTok Like (Bot Mix)", name: "1.000 Like", price: 10000, status: "Ada" },
+            { category: "TikTok Like (Bot Mix)", name: "2.000 Like", price: 20000, status: "Ada" },
+            
+            // TikTok Share
+            { category: "TikTok Share", name: "100 Share", price: 1000, status: "Ada" },
+            { category: "TikTok Share", name: "200 Share", price: 2000, status: "Ada" },
+            { category: "TikTok Share", name: "500 Share", price: 4500, status: "Ada" },
+            { category: "TikTok Share", name: "1.000 Share", price: 9000, status: "Ada" },
+            
+            // TikTok Saves
+            { category: "TikTok Saves", name: "100 Saves", price: 1000, status: "Ada" },
+            { category: "TikTok Saves", name: "200 Saves", price: 1500, status: "Ada" },
+            { category: "TikTok Saves", name: "300 Saves", price: 2500, status: "Ada" },
+            { category: "TikTok Saves", name: "400 Saves", price: 3000, status: "Ada" },
+            { category: "TikTok Saves", name: "500 Saves", price: 4500, status: "Ada" },
+            { category: "TikTok Saves", name: "1.000 Saves", price: 6000, status: "Ada" },
+            { category: "TikTok Saves", name: "2.000 Saves", price: 12000, status: "Ada" },
+            
+            // Instagram Followers Mix
+            { category: "Instagram Followers Mix", name: "100 Followers", price: 10000, status: "Ada" },
+            { category: "Instagram Followers Mix", name: "200 Followers", price: 20000, status: "Ada" },
+            { category: "Instagram Followers Mix", name: "500 Followers", price: 50000, status: "Ada" },
+            { category: "Instagram Followers Mix", name: "1.000 Followers", price: 90000, status: "Ada" },
+            { category: "Instagram Followers Mix", name: "2.000 Followers", price: 180000, status: "Ada" },
+            
+            // Instagram Followers Indonesia
+            { category: "Instagram Followers Indonesia", name: "100 Followers", price: 15000, status: "Ada" },
+            { category: "Instagram Followers Indonesia", name: "200 Followers", price: 30000, status: "Ada" },
+            { category: "Instagram Followers Indonesia", name: "500 Followers", price: 75500, status: "Ada" },
+            { category: "Instagram Followers Indonesia", name: "1.000 Followers", price: 130000, status: "Ada" },
+            { category: "Instagram Followers Indonesia", name: "2.000 Followers", price: 260000, status: "Ada" },
+            
+            // Instagram Like Mix Campuran
+            { category: "Instagram Like Mix Campuran", name: "100 Like", price: 1000, status: "Ada" },
+            { category: "Instagram Like Mix Campuran", name: "200 Like", price: 2000, status: "Ada" },
+            { category: "Instagram Like Mix Campuran", name: "500 Like", price: 5000, status: "Ada" },
+            { category: "Instagram Like Mix Campuran", name: "1.000 Like", price: 10000, status: "Ada" },
+            { category: "Instagram Like Mix Campuran", name: "2.000 Like", price: 12000, status: "Ada" },
+            
+            // Like Instagram Indonesia
+            { category: "Like Instagram Indonesia", name: "100 Like", price: 3000, status: "Ada" },
+            { category: "Like Instagram Indonesia", name: "200 Like", price: 12000, status: "Ada" },
+            { category: "Like Instagram Indonesia", name: "500 Like", price: 15000, status: "Ada" },
+            { category: "Like Instagram Indonesia", name: "1.000 Like", price: 30000, status: "Ada" },
+            { category: "Like Instagram Indonesia", name: "2.000 Like", price: 60000, status: "Ada" },
+            
+            // Instagram Reels Views
+            { category: "Instagram Reels Views", name: "1.000 View", price: 1000, status: "Ada" },
+            { category: "Instagram Reels Views", name: "2.000 View", price: 2000, status: "Ada" },
+            { category: "Instagram Reels Views", name: "5.000 View", price: 5000, status: "Ada" },
+            { category: "Instagram Reels Views", name: "10.000 View", price: 10000, status: "Ada" },
+            { category: "Instagram Reels Views", name: "20.000 View", price: 20000, status: "Ada" }
+        ];
+
+        // Kelompokkan produk berdasarkan kategori
+        const categories = {};
+        products.forEach(product => {
+            if (!categories[product.category]) {
+                categories[product.category] = [];
+            }
+            categories[product.category].push(product);
+        });
+
+        // Render price list
+        function renderPriceList() {
+            const priceListElement = document.getElementById('priceList');
+            priceListElement.innerHTML = '';
+            
+            for (const category in categories) {
+                const categoryElement = document.createElement('div');
+                categoryElement.className = 'category';
+                
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-header';
+                categoryHeader.innerHTML = `<div class="category-title">${category}</div>`;
+                
+                const productList = document.createElement('div');
+                productList.className = 'product-list';
+                
+                categories[category].forEach(product => {
+                    const productItem = document.createElement('div');
+                    productItem.className = 'product-item';
+                    
+                    productItem.innerHTML = `
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price user-only">Rp ${product.price.toLocaleString('id-ID')}</div>
+                        <div class="product-status user-only ${product.status === 'Ada' ? 'status-ada' : 'status-kosong'}">${product.status}</div>
+                        
+                        <div class="admin-only admin-controls">
+                            <input type="number" value="${product.price}" data-category="${category}" data-name="${product.name}" onchange="updatePrice(this)" min="0">
+                            <select data-category="${category}" data-name="${product.name}" onchange="updateStatus(this)">
+                                <option value="Ada" ${product.status === 'Ada' ? 'selected' : ''}>Ada</option>
+                                <option value="Kosong" ${product.status === 'Kosong' ? 'selected' : ''}>Kosong</option>
+                            </select>
+                        </div>
+                    `;
+                    
+                    productList.appendChild(productItem);
+                });
+                
+                categoryElement.appendChild(categoryHeader);
+                categoryElement.appendChild(productList);
+                priceListElement.appendChild(categoryElement);
+            }
+        }
+
+        // Toggle mode admin/user
+        function toggleAdminMode() {
+            const password = document.getElementById('adminPassword').value;
+            
+            // Password sederhana untuk demo (bisa diganti dengan sistem autentikasi yang lebih aman)
+            if (password === 'admin123') {
+                document.body.classList.toggle('mode-admin');
+                
+                if (document.body.classList.contains('mode-admin')) {
+                    alert('Mode Admin diaktifkan');
+                    document.getElementById('adminPassword').value = '';
+                } else {
+                    alert('Mode User diaktifkan');
+                }
+            } else {
+                alert('Password admin salah!');
+            }
+        }
+
+        // Update harga produk
+        function updatePrice(input) {
+            const category = input.getAttribute('data-category');
+            const name = input.getAttribute('data-name');
+            const newPrice = parseInt(input.value);
+            
+            // Cari produk dan update harganya
+            const product = products.find(p => p.category === category && p.name === name);
+            if (product) {
+                product.price = newPrice;
+                alert(`Harga ${name} berhasil diupdate menjadi Rp ${newPrice.toLocaleString('id-ID')}`);
+            }
+        }
+
+        // Update status stok produk
+        function updateStatus(select) {
+            const category = select.getAttribute('data-category');
+            const name = select.getAttribute('data-name');
+            const newStatus = select.value;
+            
+            // Cari produk dan update statusnya
+            const product = products.find(p => p.category === category && p.name === name);
+            if (product) {
+                product.status = newStatus;
+                alert(`Status stok ${name} berhasil diupdate menjadi ${newStatus}`);
+            }
+        }
+
+        // Inisialisasi halaman
+        document.addEventListener('DOMContentLoaded', renderPriceList);
+    </script>
+</body>
+</html>
