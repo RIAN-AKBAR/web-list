@@ -1,534 +1,580 @@
-// Konfigurasi koneksi database menggunakan URI
-const DB_URI = 'mysql://silverhold_againstcat:eb2805e018106915a17b60b8ca812959359872a5@2j-o08.h.filess.io:61002/silverhold_againstcat';
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.HashSet;
+import java.io.Console;
 
-// Data produk (default jika tidak bisa terhubung ke database)
-let products = [
-    { id: 1, category: "Alight Motion", name: "1 Tahun Privat", price: 3000, status: "Ada" },
-    { id: 2, category: "CapCut", name: "1 Bulan (garansi 7 hari)", price: 6000, status: "Ada" },
-    { id: 3, category: "CapCut", name: "1 Bulan Full Garansi", price: 12000, status: "Ada" },
-    { id: 4, category: "GetContact", name: "30 Hari", price: 15000, status: "Ada" }
-];
-
-// Parse URI database
-function parseDatabaseUri(uri) {
-    const regex = /mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/;
-    const match = uri.match(regex);
+public class ProductManager {
+    // Konfigurasi koneksi database
+    private static final String DB_URI = "mysql://silverhold_againstcat:eb2805e018106915a17b60b8ca812959359872a5@2j-o08.h.filess.io:61002/silverhold_againstcat";
     
-    if (!match) {
-        throw new Error('Invalid database URI format');
+    // Data produk default
+    private static List<Product> products = new ArrayList<>();
+    
+    static {
+        // Inisialisasi data produk default
+        products.add(new Product(1, "Alight Motion", "1 Tahun Privat", 3000, "Ada"));
+        products.add(new Product(2, "CapCut", "1 Bulan (garansi 7 hari)", 6000, "Ada"));
+        products.add(new Product(3, "CapCut", "1 Bulan Full Garansi", 12000, "Ada"));
+        products.add(new Product(4, "GetContact", "30 Hari", 15000, "Ada"));
     }
     
-    return {
-        user: match[1],
-        password: match[2],
-        host: match[3],
-        port: parseInt(match[4]),
-        database: match[5]
-    };
-}
-
-// Fungsi untuk membuat koneksi ke database
-async function connectToDatabase() {
-    try {
-        console.log('Mencoba terhubung ke database...');
+    // Kelas untuk merepresentasikan produk
+    static class Product {
+        private int id;
+        private String category;
+        private String name;
+        private int price;
+        private String status;
+        
+        public Product(int id, String category, String name, int price, String status) {
+            this.id = id;
+            this.category = category;
+            this.name = name;
+            this.price = price;
+            this.status = status;
+        }
+        
+        // Getter dan setter
+        public int getId() { return id; }
+        public void setId(int id) { this.id = id; }
+        
+        public String getCategory() { return category; }
+        public void setCategory(String category) { this.category = category; }
+        
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        
+        public int getPrice() { return price; }
+        public void setPrice(int price) { this.price = price; }
+        
+        public String getStatus() { return status; }
+        public void setStatus(String status) { this.status = status; }
+        
+        @Override
+        public String toString() {
+            return String.format("ID: %d, Category: %s, Name: %s, Price: %d, Status: %s", 
+                               id, category, name, price, status);
+        }
+    }
+    
+    // Parse URI database
+    public static DatabaseConfig parseDatabaseUri(String uri) {
+        // Format: mysql://user:password@host:port/database
+        String[] parts = uri.split("://|:|@|/");
+        
+        if (parts.length < 7) {
+            throw new Error("Invalid database URI format");
+        }
+        
+        return new DatabaseConfig(
+            parts[3], // host
+            parts[6], // database
+            parts[4], // port
+            parts[1], // username
+            parts[2]  // password
+        );
+    }
+    
+    // Kelas untuk konfigurasi database
+    static class DatabaseConfig {
+        private String host;
+        private String database;
+        private String port;
+        private String username;
+        private String password;
+        
+        public DatabaseConfig(String host, String database, String port, String username, String password) {
+            this.host = host;
+            this.database = database;
+            this.port = port;
+            this.username = username;
+            this.password = password;
+        }
+        
+        // Getter
+        public String getHost() { return host; }
+        public String getDatabase() { return database; }
+        public String getPort() { return port; }
+        public String getUsername() { return username; }
+        public String getPassword() { return password; }
+    }
+    
+    // Fungsi untuk membuat koneksi ke database
+    public static Connection connectToDatabase() throws SQLException, ClassNotFoundException {
+        System.out.println("Mencoba terhubung ke database...");
         
         // Parse URI database
-        const dbConfig = parseDatabaseUri(DB_URI);
+        DatabaseConfig dbConfig = parseDatabaseUri(DB_URI);
         
-        // Simulasi koneksi ke database MySQL
-        // Catatan: Di lingkungan browser, kita tidak dapat terhubung langsung ke MySQL
-        // Ini hanya simulasi. Implementasi nyata memerlukan backend API.
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Load driver MySQL
+        Class.forName("com.mysql.cj.jdbc.Driver");
         
-        // Simulasi koneksi berhasil
-        const mockConnection = {
-            config: dbConfig,
-            query: (sql, params) => {
-                console.log('Query executed:', sql, params);
-                
-                // Simulasi query berdasarkan perintah SQL
-                if (sql.toLowerCase().includes('select')) {
-                    return Promise.resolve([products]);
-                } else if (sql.toLowerCase().includes('insert')) {
-                    const newId = Math.max(...products.map(p => p.id)) + 1;
-                    const newProduct = {
-                        id: newId,
-                        category: params[0],
-                        name: params[1],
-                        price: params[2],
-                        status: params[3]
-                    };
-                    products.push(newProduct);
-                    return Promise.resolve([{ insertId: newId }]);
-                } else if (sql.toLowerCase().includes('update')) {
-                    const id = params[4];
-                    const index = products.findIndex(p => p.id === id);
-                    if (index !== -1) {
-                        products[index] = {
-                            id: id,
-                            category: params[0],
-                            name: params[1],
-                            price: params[2],
-                            status: params[3]
-                        };
-                    }
-                    return Promise.resolve([{ affectedRows: 1 }]);
-                } else if (sql.toLowerCase().includes('delete')) {
-                    const id = params[0];
-                    const initialLength = products.length;
-                    products = products.filter(p => p.id !== id);
-                    return Promise.resolve([{ affectedRows: initialLength - products.length }]);
-                }
-                
-                return Promise.resolve([]);
-            },
-            end: () => console.log('Koneksi database ditutup')
-        };
+        // Buat URL koneksi
+        String url = "jdbc:mysql://" + dbConfig.getHost() + ":" + dbConfig.getPort() + "/" + dbConfig.getDatabase();
         
-        console.log('Berhasil terhubung ke database MySQL:', dbConfig.host);
-        return mockConnection;
-    } catch (error) {
-        console.error('Gagal terhubung ke database:', error.message);
-        throw error;
-    }
-}
-
-// Fungsi untuk mengambil data produk dari database
-async function fetchProductsFromDatabase() {
-    let connection;
-    try {
-        connection = await connectToDatabase();
+        // Buat koneksi
+        Connection conn = DriverManager.getConnection(url, dbConfig.getUsername(), dbConfig.getPassword());
         
-        // Query untuk mengambil semua produk
-        const query = 'SELECT * FROM products ORDER BY category, name';
-        const [results] = await connection.query(query);
-        
-        console.log('Data produk berhasil diambil dari database');
-        return results;
-    } catch (error) {
-        console.error('Error mengambil data produk:', error.message);
-        // Menggunakan data default jika tidak bisa terhubung ke database
-        return products;
-    } finally {
-        if (connection) {
-            connection.end();
-        }
-    }
-}
-
-// Fungsi untuk menyimpan produk ke database
-async function saveProductToDatabase(product) {
-    let connection;
-    try {
-        connection = await connectToDatabase();
-        
-        // Query untuk menyimpan produk
-        const query = 'INSERT INTO products (category, name, price, status) VALUES (?, ?, ?, ?)';
-        const params = [product.category, product.name, product.price, product.status];
-        
-        const [result] = await connection.query(query, params);
-        console.log('Produk berhasil disimpan ke database:', result);
-        
-        return result;
-    } catch (error) {
-        console.error('Error menyimpan produk:', error.message);
-        throw error;
-    } finally {
-        if (connection) {
-            connection.end();
-        }
-    }
-}
-
-// Fungsi untuk memperbarui produk di database
-async function updateProductInDatabase(product) {
-    let connection;
-    try {
-        connection = await connectToDatabase();
-        
-        // Query untuk memperbarui produk
-        const query = 'UPDATE products SET category = ?, name = ?, price = ?, status = ? WHERE id = ?';
-        const params = [product.category, product.name, product.price, product.status, product.id];
-        
-        const [result] = await connection.query(query, params);
-        console.log('Produk berhasil diperbarui di database:', result);
-        
-        return result;
-    } catch (error) {
-        console.error('Error memperbarui produk:', error.message);
-        throw error;
-    } finally {
-        if (connection) {
-            connection.end();
-        }
-    }
-}
-
-// Fungsi untuk menghapus produk dari database
-async function deleteProductFromDatabase(productId) {
-    let connection;
-    try {
-        connection = await connectToDatabase();
-        
-        // Query untuk menghapus produk
-        const query = 'DELETE FROM products WHERE id = ?';
-        const params = [productId];
-        
-        const [result] = await connection.query(query, params);
-        console.log('Produk berhasil dihapus dari database:', result);
-        
-        return result;
-    } catch (error) {
-        console.error('Error menghapus produk:', error.message);
-        throw error;
-    } finally {
-        if (connection) {
-            connection.end();
-        }
-    }
-}
-
-// Fungsi untuk menampilkan produk
-function displayProducts(productsToDisplay) {
-    const productsContainer = document.getElementById('productsContainer');
-    if (!productsContainer) return;
-    
-    productsContainer.innerHTML = '';
-    
-    if (productsToDisplay.length === 0) {
-        productsContainer.innerHTML = '<div class="no-products">Tidak ada produk yang ditemukan</div>';
-        return;
+        System.out.println("Berhasil terhubung ke database MySQL: " + dbConfig.getHost());
+        return conn;
     }
     
-    productsToDisplay.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
+    // Fungsi untuk mengambil data produk dari database
+    public static List<Product> fetchProductsFromDatabase() {
+        List<Product> productList = new ArrayList<>();
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
         
-        productCard.innerHTML = `
-            <div class="product-header">
-                <h3>${product.name}</h3>
-                <p>${product.category}</p>
-            </div>
-            <div class="product-body">
-                <p class="product-price">Rp ${product.price.toLocaleString('id-ID')}</p>
-                <span class="product-status status-${product.status.toLowerCase()}">${product.status}</span>
-                <div class="product-actions">
-                    <button class="btn-edit" onclick="editProduct(${product.id})">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button class="btn-delete" onclick="deleteProduct(${product.id})">
-                        <i class="fas fa-trash"></i> Hapus
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        productsContainer.appendChild(productCard);
-    });
-    
-    // Update statistik
-    updateStatistics(productsToDisplay);
-}
-
-// Fungsi untuk mengisi filter kategori
-function populateCategoryFilter() {
-    const categoryFilter = document.getElementById('categoryFilter');
-    if (!categoryFilter) return;
-    
-    // Hapus opsi yang ada kecuali opsi default
-    while (categoryFilter.options.length > 1) {
-        categoryFilter.remove(1);
-    }
-    
-    // Dapatkan kategori unik dari produk
-    const categories = [...new Set(products.map(product => product.category))];
-    
-    // Tambahkan setiap kategori ke dropdown
-    categories.forEach(category => {
-        const option = document.createElement('option');
-        option.value = category;
-        option.textContent = category;
-        categoryFilter.appendChild(option);
-    });
-}
-
-// Fungsi untuk memfilter produk
-function filterProducts() {
-    const searchText = document.getElementById('searchInput').value.toLowerCase();
-    const selectedCategory = document.getElementById('categoryFilter').value;
-    
-    const filteredProducts = products.filter(product => {
-        const matchesSearch = product.name.toLowerCase().includes(searchText) || 
-                             product.category.toLowerCase().includes(searchText);
-        const matchesCategory = selectedCategory === '' || product.category === selectedCategory;
-        
-        return matchesSearch && matchesCategory;
-    });
-    
-    displayProducts(filteredProducts);
-}
-
-// Fungsi untuk memperbarui statistik
-function updateStatistics(productsToDisplay) {
-    const totalProductsElement = document.getElementById('totalProducts');
-    const totalCategoriesElement = document.getElementById('totalCategories');
-    const availableProductsElement = document.getElementById('availableProducts');
-    
-    if (totalProductsElement) {
-        totalProductsElement.textContent = productsToDisplay.length;
-    }
-    
-    if (totalCategoriesElement) {
-        const uniqueCategories = new Set(productsToDisplay.map(product => product.category));
-        totalCategoriesElement.textContent = uniqueCategories.size;
-    }
-    
-    if (availableProductsElement) {
-        const availableProducts = productsToDisplay.filter(product => product.status === 'Ada').length;
-        availableProductsElement.textContent = availableProducts;
-    }
-}
-
-// Fungsi untuk menambah produk baru
-async function addNewProduct() {
-    const category = prompt('Masukkan kategori produk:');
-    if (!category) return;
-    
-    const name = prompt('Masukkan nama produk:');
-    if (!name) return;
-    
-    const priceInput = prompt('Masukkan harga produk:');
-    const price = parseInt(priceInput);
-    if (isNaN(price)) {
-        alert('Harga harus berupa angka!');
-        return;
-    }
-    
-    const status = confirm('Produk tersedia? (OK untuk Ya, Cancel untuk Tidak)') ? 'Ada' : 'Kosong';
-    
-    const newProduct = {
-        category,
-        name,
-        price,
-        status
-    };
-    
-    try {
-        // Simpan ke database
-        await saveProductToDatabase(newProduct);
-        
-        // Perbarui tampilan
-        await refreshProducts();
-        
-        alert('Produk berhasil ditambahkan!');
-    } catch (error) {
-        alert('Gagal menambahkan produk: ' + error.message);
-    }
-}
-
-// Fungsi untuk mengedit produk
-async function editProduct(productId) {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    
-    const newCategory = prompt('Edit kategori produk:', product.category);
-    if (!newCategory) return;
-    
-    const newName = prompt('Edit nama produk:', product.name);
-    if (!newName) return;
-    
-    const newPriceInput = prompt('Edit harga produk:', product.price);
-    const newPrice = parseInt(newPriceInput);
-    if (isNaN(newPrice)) {
-        alert('Harga harus berupa angka!');
-        return;
-    }
-    
-    const newStatus = confirm('Produk tersedia? (OK untuk Ya, Cancel untuk Tidak)') ? 'Ada' : 'Kosong';
-    
-    const updatedProduct = {
-        ...product,
-        category: newCategory,
-        name: newName,
-        price: newPrice,
-        status: newStatus
-    };
-    
-    try {
-        // Perbarui di database
-        await updateProductInDatabase(updatedProduct);
-        
-        // Perbarui tampilan
-        await refreshProducts();
-        
-        alert('Produk berhasil diperbarui!');
-    } catch (error) {
-        alert('Gagal memperbarui produk: ' + error.message);
-    }
-}
-
-// Fungsi untuk menghapus produk
-async function deleteProduct(productId) {
-    if (!confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-        return;
-    }
-    
-    try {
-        // Hapus dari database
-        await deleteProductFromDatabase(productId);
-        
-        // Perbarui tampilan
-        await refreshProducts();
-        
-        alert('Produk berhasil dihapus!');
-    } catch (error) {
-        alert('Gagal menghapus produk: ' + error.message);
-    }
-}
-
-// Fungsi untuk menyegarkan data produk
-async function refreshProducts() {
-    products = await fetchProductsFromDatabase();
-    displayProducts(products);
-    populateCategoryFilter();
-}
-
-// Fungsi untuk mengekspor data ke CSV
-function exportToCSV() {
-    const headers = ['Category', 'Name', 'Price', 'Status'];
-    const csvData = [headers];
-    
-    products.forEach(product => {
-        csvData.push([
-            product.category,
-            product.name,
-            product.price,
-            product.status
-        ]);
-    });
-    
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'products_export.csv');
-    link.style.visibility = 'hidden';
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-// Fungsi untuk mengimpor data dari CSV
-function importFromCSV() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.csv';
-    
-    input.onchange = async (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const content = e.target.result;
-            const lines = content.split('\n');
+        try {
+            conn = connectToDatabase();
+            stmt = conn.createStatement();
             
-            // Lewati header
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
+            // Query untuk mengambil semua produk
+            String query = "SELECT * FROM products ORDER BY category, name";
+            rs = stmt.executeQuery(query);
+            
+            // Proses hasil query
+            while (rs.next()) {
+                Product product = new Product(
+                    rs.getInt("id"),
+                    rs.getString("category"),
+                    rs.getString("name"),
+                    rs.getInt("price"),
+                    rs.getString("status")
+                );
+                productList.add(product);
+            }
+            
+            System.out.println("Data produk berhasil diambil dari database");
+        } catch (Exception e) {
+            System.out.println("Error mengambil data produk: " + e.getMessage());
+            // Menggunakan data default jika tidak bisa terhubung ke database
+            productList = products;
+        } finally {
+            // Tutup resources
+            try { if (rs != null) rs.close(); } catch (SQLException e) {}
+            try { if (stmt != null) stmt.close(); } catch (SQLException e) {}
+            try { if (conn != null) conn.close(); } catch (SQLException e) {}
+        }
+        
+        return productList;
+    }
+    
+    // Fungsi untuk menyimpan produk ke database
+    public static int saveProductToDatabase(Product product) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        int result = 0;
+        
+        try {
+            conn = connectToDatabase();
+            
+            // Query untuk menyimpan produk
+            String query = "INSERT INTO products (category, name, price, status) VALUES (?, ?, ?, ?)";
+            pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, product.getCategory());
+            pstmt.setString(2, product.getName());
+            pstmt.setInt(3, product.getPrice());
+            pstmt.setString(4, product.getStatus());
+            
+            result = pstmt.executeUpdate();
+            System.out.println("Produk berhasil disimpan ke database: " + result + " baris terpengaruh");
+        } catch (Exception e) {
+            System.out.println("Error menyimpan produk: " + e.getMessage());
+        } finally {
+            // Tutup resources
+            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) {}
+            try { if (conn != null) conn.close(); } catch (SQLException e) {}
+        }
+        
+        return result;
+    }
+    
+    // Fungsi untuk memperbarui produk di database
+    public static int updateProductInDatabase(Product product) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        int result = 0;
+        
+        try {
+            conn = connectToDatabase();
+            
+            // Query untuk memperbarui produk
+            String query = "UPDATE products SET category = ?, name = ?, price = ?, status = ? WHERE id = ?";
+            pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, product.getCategory());
+            pstmt.setString(2, product.getName());
+            pstmt.setInt(3, product.getPrice());
+            pstmt.setString(4, product.getStatus());
+            pstmt.setInt(5, product.getId());
+            
+            result = pstmt.executeUpdate();
+            System.out.println("Produk berhasil diperbarui di database: " + result + " baris terpengaruh");
+        } catch (Exception e) {
+            System.out.println("Error memperbarui produk: " + e.getMessage());
+        } finally {
+            // Tutup resources
+            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) {}
+            try { if (conn != null) conn.close(); } catch (SQLException e) {}
+        }
+        
+        return result;
+    }
+    
+    // Fungsi untuk menghapus produk dari database
+    public static int deleteProductFromDatabase(int productId) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        int result = 0;
+        
+        try {
+            conn = connectToDatabase();
+            
+            // Query untuk menghapus produk
+            String query = "DELETE FROM products WHERE id = ?";
+            pstmt = conn.prepareStatement(query);
+            pstmt.setInt(1, productId);
+            
+            result = pstmt.executeUpdate();
+            System.out.println("Produk berhasil dihapus dari database: " + result + " baris terpengaruh");
+        } catch (Exception e) {
+            System.out.println("Error menghapus produk: " + e.getMessage());
+        } finally {
+            // Tutup resources
+            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) {}
+            try { if (conn != null) conn.close(); } catch (SQLException e) {}
+        }
+        
+        return result;
+    }
+    
+    // Fungsi untuk menampilkan produk
+    public static void displayProducts(List<Product> productsToDisplay) {
+        if (productsToDisplay.isEmpty()) {
+            System.out.println("Tidak ada produk yang ditemukan");
+            return;
+        }
+        
+        for (Product product : productsToDisplay) {
+            System.out.println(product);
+        }
+        
+        // Update statistik
+        updateStatistics(productsToDisplay);
+    }
+    
+    // Fungsi untuk memfilter produk
+    public static List<Product> filterProducts(List<Product> productList, String searchText, String selectedCategory) {
+        List<Product> filteredProducts = new ArrayList<>();
+        
+        for (Product product : productList) {
+            boolean matchesSearch = product.getName().toLowerCase().contains(searchText.toLowerCase()) || 
+                                   product.getCategory().toLowerCase().contains(searchText.toLowerCase());
+            boolean matchesCategory = selectedCategory.isEmpty() || product.getCategory().equals(selectedCategory);
+            
+            if (matchesSearch && matchesCategory) {
+                filteredProducts.add(product);
+            }
+        }
+        
+        return filteredProducts;
+    }
+    
+    // Fungsi untuk memperbarui statistik
+    public static void updateStatistics(List<Product> productsToDisplay) {
+        int totalProducts = productsToDisplay.size();
+        
+        Set<String> uniqueCategories = new HashSet<>();
+        int availableProducts = 0;
+        
+        for (Product product : productsToDisplay) {
+            uniqueCategories.add(product.getCategory());
+            if ("Ada".equals(product.getStatus())) {
+                availableProducts++;
+            }
+        }
+        
+        System.out.println("\n--- STATISTIK ---");
+        System.out.println("Total Produk: " + totalProducts);
+        System.out.println("Total Kategori: " + uniqueCategories.size());
+        System.out.println("Produk Tersedia: " + availableProducts);
+        System.out.println("-----------------\n");
+    }
+    
+    // Fungsi untuk menambah produk baru
+    public static void addNewProduct(Scanner scanner) {
+        System.out.print("Masukkan kategori produk: ");
+        String category = scanner.nextLine();
+        if (category.isEmpty()) return;
+        
+        System.out.print("Masukkan nama produk: ");
+        String name = scanner.nextLine();
+        if (name.isEmpty()) return;
+        
+        System.out.print("Masukkan harga produk: ");
+        String priceInput = scanner.nextLine();
+        int price;
+        try {
+            price = Integer.parseInt(priceInput);
+        } catch (NumberFormatException e) {
+            System.out.println("Harga harus berupa angka!");
+            return;
+        }
+        
+        System.out.print("Produk tersedia? (y/n): ");
+        String statusInput = scanner.nextLine();
+        String status = "y".equalsIgnoreCase(statusInput) ? "Ada" : "Kosong";
+        
+        Product newProduct = new Product(0, category, name, price, status);
+        
+        try {
+            // Simpan ke database
+            int result = saveProductToDatabase(newProduct);
+            
+            if (result > 0) {
+                System.out.println("Produk berhasil ditambahkan!");
+            } else {
+                System.out.println("Gagal menambahkan produk!");
+            }
+        } catch (Exception e) {
+            System.out.println("Gagal menambahkan produk: " + e.getMessage());
+        }
+    }
+    
+    // Fungsi untuk mengedit produk
+    public static void editProduct(Scanner scanner, List<Product> productList) {
+        System.out.print("Masukkan ID produk yang akan diedit: ");
+        String idInput = scanner.nextLine();
+        int productId;
+        try {
+            productId = Integer.parseInt(idInput);
+        } catch (NumberFormatException e) {
+            System.out.println("ID harus berupa angka!");
+            return;
+        }
+        
+        Product productToEdit = null;
+        for (Product product : productList) {
+            if (product.getId() == productId) {
+                productToEdit = product;
+                break;
+            }
+        }
+        
+        if (productToEdit == null) {
+            System.out.println("Produk dengan ID " + productId + " tidak ditemukan!");
+            return;
+        }
+        
+        System.out.print("Edit kategori produk (" + productToEdit.getCategory() + "): ");
+        String newCategory = scanner.nextLine();
+        if (newCategory.isEmpty()) newCategory = productToEdit.getCategory();
+        
+        System.out.print("Edit nama produk (" + productToEdit.getName() + "): ");
+        String newName = scanner.nextLine();
+        if (newName.isEmpty()) newName = productToEdit.getName();
+        
+        System.out.print("Edit harga produk (" + productToEdit.getPrice() + "): ");
+        String newPriceInput = scanner.nextLine();
+        int newPrice;
+        if (newPriceInput.isEmpty()) {
+            newPrice = productToEdit.getPrice();
+        } else {
+            try {
+                newPrice = Integer.parseInt(newPriceInput);
+            } catch (NumberFormatException e) {
+                System.out.println("Harga harus berupa angka!");
+                return;
+            }
+        }
+        
+        System.out.print("Produk tersedia? (y/n) [" + productToEdit.getStatus() + "]: ");
+        String newStatusInput = scanner.nextLine();
+        String newStatus;
+        if (newStatusInput.isEmpty()) {
+            newStatus = productToEdit.getStatus();
+        } else {
+            newStatus = "y".equalsIgnoreCase(newStatusInput) ? "Ada" : "Kosong";
+        }
+        
+        Product updatedProduct = new Product(
+            productToEdit.getId(),
+            newCategory,
+            newName,
+            newPrice,
+            newStatus
+        );
+        
+        try {
+            // Perbarui di database
+            int result = updateProductInDatabase(updatedProduct);
+            
+            if (result > 0) {
+                System.out.println("Produk berhasil diperbarui!");
+            } else {
+                System.out.println("Gagal memperbarui produk!");
+            }
+        } catch (Exception e) {
+            System.out.println("Gagal memperbarui produk: " + e.getMessage());
+        }
+    }
+    
+    // Fungsi untuk menghapus produk
+    public static void deleteProduct(Scanner scanner, List<Product> productList) {
+        System.out.print("Masukkan ID produk yang akan dihapus: ");
+        String idInput = scanner.nextLine();
+        int productId;
+        try {
+            productId = Integer.parseInt(idInput);
+        } catch (NumberFormatException e) {
+            System.out.println("ID harus berupa angka!");
+            return;
+        }
+        
+        System.out.print("Apakah Anda yakin ingin menghapus produk ini? (y/n): ");
+        String confirm = scanner.nextLine();
+        if (!"y".equalsIgnoreCase(confirm)) {
+            return;
+        }
+        
+        try {
+            // Hapus dari database
+            int result = deleteProductFromDatabase(productId);
+            
+            if (result > 0) {
+                System.out.println("Produk berhasil dihapus!");
+            } else {
+                System.out.println("Gagal menghapus produk!");
+            }
+        } catch (Exception e) {
+            System.out.println("Gagal menghapus produk: " + e.getMessage());
+        }
+    }
+    
+    // Fungsi untuk menyegarkan data produk
+    public static List<Product> refreshProducts() {
+        List<Product> updatedProducts = fetchProductsFromDatabase();
+        displayProducts(updatedProducts);
+        return updatedProducts;
+    }
+    
+    // Fungsi untuk mengekspor data ke CSV
+    public static void exportToCSV(List<Product> productList) {
+        System.out.println("Category,Name,Price,Status");
+        for (Product product : productList) {
+            System.out.println(product.getCategory() + "," + 
+                             product.getName() + "," + 
+                             product.getPrice() + "," + 
+                             product.getStatus());
+        }
+        System.out.println("\nData telah diekspor dalam format CSV");
+    }
+    
+    // Inisialisasi aplikasi
+    public static void initApp() {
+        try {
+            // Tampilkan status koneksi
+            DatabaseConfig dbInfo = parseDatabaseUri(DB_URI);
+            System.out.println("Menggunakan database: " + dbInfo.getDatabase() + " pada host: " + dbInfo.getHost());
+            
+            Scanner scanner = new Scanner(System.in);
+            List<Product> currentProducts = refreshProducts();
+            
+            boolean running = true;
+            while (running) {
+                System.out.println("\n=== MENU MANAJEMEN PRODUK ===");
+                System.out.println("1. Tampilkan Semua Produk");
+                System.out.println("2. Cari Produk");
+                System.out.println("3. Filter Berdasarkan Kategori");
+                System.out.println("4. Tambah Produk");
+                System.out.println("5. Edit Produk");
+                System.out.println("6. Hapus Produk");
+                System.out.println("7. Ekspor ke CSV");
+                System.out.println("8. Segarkan Data");
+                System.out.println("0. Keluar");
+                System.out.print("Pilihan: ");
                 
-                const [category, name, price, status] = lines[i].split(',');
+                String choice = scanner.nextLine();
                 
-                if (category && name && price && status) {
-                    const product = {
-                        category: category.trim(),
-                        name: name.trim(),
-                        price: parseInt(price.trim()),
-                        status: status.trim()
-                    };
-                    
-                    try {
-                        await saveProductToDatabase(product);
-                    } catch (error) {
-                        console.error('Gagal mengimpor produk:', error);
-                    }
+                switch (choice) {
+                    case "1":
+                        displayProducts(currentProducts);
+                        break;
+                    case "2":
+                        System.out.print("Masukkan kata kunci pencarian: ");
+                        String searchText = scanner.nextLine();
+                        List<Product> searchResults = filterProducts(currentProducts, searchText, "");
+                        displayProducts(searchResults);
+                        break;
+                    case "3":
+                        System.out.print("Masukkan kategori untuk filter: ");
+                        String category = scanner.nextLine();
+                        List<Product> categoryResults = filterProducts(currentProducts, "", category);
+                        displayProducts(categoryResults);
+                        break;
+                    case "4":
+                        addNewProduct(scanner);
+                        currentProducts = refreshProducts();
+                        break;
+                    case "5":
+                        editProduct(scanner, currentProducts);
+                        currentProducts = refreshProducts();
+                        break;
+                    case "6":
+                        deleteProduct(scanner, currentProducts);
+                        currentProducts = refreshProducts();
+                        break;
+                    case "7":
+                        exportToCSV(currentProducts);
+                        break;
+                    case "8":
+                        currentProducts = refreshProducts();
+                        break;
+                    case "0":
+                        running = false;
+                        System.out.println("Terima kasih telah menggunakan aplikasi!");
+                        break;
+                    default:
+                        System.out.println("Pilihan tidak valid!");
                 }
             }
             
-            // Perbarui tampilan
-            await refreshProducts();
-            alert('Data berhasil diimpor!');
-        };
-        
-        reader.readAsText(file);
-    };
+            scanner.close();
+        } catch (Exception e) {
+            System.out.println("Gagal menginisialisasi aplikasi: " + e.getMessage());
+        }
+    }
     
-    input.click();
-}
-
-// Inisialisasi aplikasi
-async function initApp() {
-    try {
-        // Tampilkan status koneksi
-        const dbInfo = parseDatabaseUri(DB_URI);
-        console.log('Menggunakan database:', dbInfo.database, 'pada host:', dbInfo.host);
-        
-        // Ambil data dari database
-        await refreshProducts();
-        
-        // Tambahkan event listener untuk pencarian
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', filterProducts);
-        }
-        
-        // Tambahkan event listener untuk filter kategori
-        const categoryFilter = document.getElementById('categoryFilter');
-        if (categoryFilter) {
-            categoryFilter.addEventListener('change', filterProducts);
-        }
-        
-        // Tambahkan event listener untuk tombol tambah produk
-        const addProductBtn = document.getElementById('addProductBtn');
-        if (addProductBtn) {
-            addProductBtn.addEventListener('click', addNewProduct);
-        }
-        
-        // Tambahkan event listener untuk tombol ekspor
-        const exportBtn = document.getElementById('exportBtn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', exportToCSV);
-        }
-        
-        // Tambahkan event listener untuk tombol impor
-        const importBtn = document.getElementById('importBtn');
-        if (importBtn) {
-            importBtn.addEventListener('click', importFromCSV);
-        }
-        
-        // Tambahkan event listener untuk tombol refresh
-        const refreshBtn = document.getElementById('refreshBtn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', refreshProducts);
-        }
-        
-        console.log('Aplikasi berhasil diinisialisasi');
-    } catch (error) {
-        console.error('Gagal menginisialisasi aplikasi:', error);
+    // Metode utama
+    public static void main(String[] args) {
+        initApp();
     }
 }
 
-// Jalankan aplikasi saat halaman dimuat
-document.addEventListener('DOMContentLoaded', initApp);
-
-// Ekspor fungsi untuk akses global
-window.addNewProduct = addNewProduct;
-window.editProduct = editProduct;
-window.deleteProduct = deleteProduct;
-window.filterProducts = filterProducts;
-window.exportToCSV = exportToCSV;
-window.importFromCSV = importFromCSV;
-window.refreshProducts = refreshProducts;
+// Kelas untuk konfigurasi database
+class DatabaseConfig {
+    private String host;
+    private String database;
+    private String port;
+    private String username;
+    private String password;
+    
+    public DatabaseConfig(String host, String database, String port, String username, String password) {
+        this.host = host;
+        this.database = database;
+        this.port = port;
+        this.username = username;
+        this.password = password;
+    }
+    
+    // Getter
+    public String getHost() { return host; }
+    public String getDatabase() { return database; }
+    public String getPort() { return port; }
+    public String getUsername() { return username; }
+    public String getPassword() { return password; }
+}
